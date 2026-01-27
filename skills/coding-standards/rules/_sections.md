@@ -32,6 +32,7 @@ Software design principles for maintainability and extensibility.
 Covers single responsibility, dependency injection, pure functions, and other principles for building robust codebases.
 
 **Rules:**
+- `design-philosophy` - DRY, YAGNI, KISS principles
 - `design-single-responsibility` - Single Responsibility Principle
 - `design-dependency-injection` - Loose coupling with dependency injection
 - `design-pure-functions` - Prefer pure functions without side effects

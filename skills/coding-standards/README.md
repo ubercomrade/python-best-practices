@@ -4,13 +4,13 @@ A comprehensive collection of Python coding standards and best practices, design
 
 ## Overview
 
-This skill provides 17 rules across 4 categories:
+This skill provides 18 rules across 4 categories:
 
 | Category | Prefix | Impact | Rules |
 |----------|--------|--------|-------|
 | Performance Optimization | `perf-` | CRITICAL | 5 |
 | Async Processing | `async-` | HIGH | 4 |
-| Design Principles | `design-` | HIGH | 4 |
+| Design Principles | `design-` | HIGH | 5 |
 | Object-Oriented Programming | `oop-` | MEDIUM | 4 |
 
 ## Structure
@@ -45,6 +45,7 @@ skills/coding-standards/
 - `async-semaphore` - Limit concurrency with semaphores
 
 ### Design Principles (HIGH)
+- `design-philosophy` - DRY, YAGNI, KISS principles
 - `design-single-responsibility` - Single Responsibility Principle
 - `design-dependency-injection` - Loose coupling with dependency injection
 - `design-pure-functions` - Prefer pure functions without side effects

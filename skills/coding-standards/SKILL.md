@@ -40,6 +40,7 @@ Software design principles for maintainability and extensibility.
 
 | Rule | Description |
 |------|-------------|
+| [design-philosophy](rules/design-philosophy.md) | DRY, YAGNI, KISS principles |
 | [design-single-responsibility](rules/design-single-responsibility.md) | Single Responsibility Principle |
 | [design-dependency-injection](rules/design-dependency-injection.md) | Loose coupling with dependency injection |
 | [design-pure-functions](rules/design-pure-functions.md) | Prefer pure functions without side effects |
