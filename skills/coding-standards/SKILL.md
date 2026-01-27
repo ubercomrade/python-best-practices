@@ -1,6 +1,6 @@
 ---
-name: python-best-practices
-description: Python best practices for AI coding agents
+name: coding-standards
+description: Coding standards and best practices for AI coding agents
 globs:
   - "**/*.py"
   - "pyproject.toml"
