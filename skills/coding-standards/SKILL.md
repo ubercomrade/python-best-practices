@@ -124,3 +124,7 @@ class Repository(Protocol):
 def full_name(self) -> str:
     return f"{self.first} {self.last}"
 ```
+
+## See Also
+
+- [Recommended Tooling](rules/tooling.md) - Tools to enforce these standards automatically (ruff, mypy, pytest, pyscn, uv)
