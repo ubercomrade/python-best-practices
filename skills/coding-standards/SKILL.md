@@ -127,4 +127,4 @@ def full_name(self) -> str:
 
 ## See Also
 
-- [Recommended Tooling](rules/tooling.md) - Tools to enforce these standards automatically (ruff, mypy, pytest, pyscn, uv)
+- [Recommended Tooling](tooling.md) - Tools to enforce these standards automatically (ruff, mypy, pytest, pyscn, uv)

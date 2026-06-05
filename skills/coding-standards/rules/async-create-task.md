@@ -8,7 +8,7 @@ tags: [async, asyncio, task, background]
 # Proper Background Task Creation [HIGH]
 
 ## Description
-Tasks created with `asyncio.create_task()` may be garbage collected and cancelled before completion if no reference is held. Additionally, exceptions may be silently swallowed in "fire-and-forget" patterns without proper handling.
+Tasks created with `asyncio.create_task()` may be garbage collected and cancelled before completion if no reference is held. Additionally, exceptions in "fire-and-forget" tasks are never raised to your code—they only surface as a `Task exception was never retrieved` message logged when the task object is finalized, which is easy to miss.
 
 ## Bad Example
 ```python
@@ -25,39 +25,46 @@ async def main() -> None:
 ## Good Example
 ```python
 import asyncio
-from collections.abc import Set
+from collections.abc import Coroutine
+from typing import Any
 
-# Global task set to hold references
-background_tasks: Set[asyncio.Task[None]] = set()
+# Global task set to hold strong references until each task finishes
+background_tasks: set[asyncio.Task[None]] = set()
 
-async def run_background_task(coro) -> None:
+def spawn_background_task(coro: Coroutine[Any, Any, None]) -> asyncio.Task[None]:
     task = asyncio.create_task(coro)
     background_tasks.add(task)
+    # discard() runs when the task completes, releasing the reference
     task.add_done_callback(background_tasks.discard)
+    return task
 
 async def main() -> None:
-    # Safe: reference held while task runs
-    await run_background_task(background_work())
+    # Safe: a strong reference is held while the task runs
+    spawn_background_task(background_work())
 
-    # Or explicitly await the result
+    # Or explicitly await the result when you need it
     task = asyncio.create_task(important_work())
     try:
         result = await task
     except Exception as e:
         logger.error(f"Task failed: {e}")
 
-# Python 3.11+ use TaskGroup
+# Python 3.11+ : TaskGroup for *structured* concurrency
+# Note: this blocks until all child tasks finish, so it is NOT fire-and-forget.
+# Use it when the spawning scope should wait for and own the tasks.
 async def main_modern() -> None:
     async with asyncio.TaskGroup() as tg:
         tg.create_task(work_a())
         tg.create_task(work_b())
-    # Reaching here = all tasks complete, exceptions propagate automatically
+    # Reaching here = all tasks complete; if any raised, an ExceptionGroup
+    # propagates and the remaining tasks are cancelled.
 ```
 
 ## Notes
+- Annotate the reference holder as `set[asyncio.Task[None]]` (builtin generic, Python 3.9+). Do **not** use `collections.abc.Set` for this—it is the immutable abstract type and does not expose `add()`/`discard()`.
 - `task.add_done_callback()` registers handlers for task completion
-- Python 3.11+ `asyncio.TaskGroup` safely manages tasks including exception handling
-- Long-running background tasks should be cancellable via `task.cancel()`
+- Use `asyncio.TaskGroup` (3.11+) for tasks the current scope should *wait for*; use the reference-holding pattern above for true fire-and-forget tasks that outlive the call.
+- Long-running background tasks should be cancellable via `task.cancel()`. Inside the task, let `asyncio.CancelledError` propagate—don't swallow it in a bare `except`.
 - Enable warnings during debug with `asyncio.get_running_loop().set_debug(True)`
 
 ## References

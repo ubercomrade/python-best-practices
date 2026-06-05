@@ -37,18 +37,26 @@ async def fetch_all_urls(urls: list[str], max_concurrent: int = 10) -> list[dict
 # Reusable pattern with class
 class RateLimitedClient:
     def __init__(self, max_concurrent: int = 10) -> None:
-        self._semaphore = asyncio.Semaphore(max_concurrent)
+        # Store the limit, not the Semaphore: create the Semaphore lazily
+        # inside a running event loop (see Notes).
+        self._max_concurrent = max_concurrent
+        self._semaphore: asyncio.Semaphore | None = None
+
+    @property
+    def semaphore(self) -> asyncio.Semaphore:
+        if self._semaphore is None:
+            self._semaphore = asyncio.Semaphore(self._max_concurrent)
+        return self._semaphore
 
     async def fetch(self, url: str) -> dict:
-        async with self._semaphore:
+        async with self.semaphore:  # BoundedSemaphore via .Semaphore is fine here
             return await self._do_fetch(url)
-
-# Using asyncio.BoundedSemaphore for stricter control
-bounded_sem = asyncio.BoundedSemaphore(10)  # Raises if released more than acquired
 ```
 
 ## Notes
-- `Semaphore` allows releasing more times than acquired; use `BoundedSemaphore` to prevent this
+- Create the `Semaphore` inside a running event loop, not at module level or in a constructor that runs before `asyncio.run()`. A `Semaphore` binds to the loop that is running when it is first used; creating it eagerly (e.g. `sem = asyncio.Semaphore(10)` at import time) risks binding to the wrong loop and raising `RuntimeError: ... attached to a different loop`.
+- `Semaphore` allows releasing more times than acquired; use `BoundedSemaphore` to catch release/acquire bugs. Construct it the same way (inside the loop).
+- `async with semaphore` releases the slot even if the body raises, so a failing task never leaks a permit.
 - Choose the concurrency limit based on the resource constraints (API rate limits, connection pools, etc.)
 - Consider using `asyncio.Queue` for producer-consumer patterns with more complex flow control
 - For HTTP clients, many libraries have built-in connection limits (e.g., `aiohttp.TCPConnector(limit=10)`)

@@ -41,7 +41,7 @@ import math
 
 class Circle:
     def __init__(self, radius: float) -> None:
-        self._radius = radius
+        self.radius = radius  # go through the setter so validation runs
 
     @property
     def radius(self) -> float:
@@ -96,8 +96,10 @@ class DataAnalysis:
 ```
 
 ## Notes
+- **Don't wrap every attribute in a property.** Expose plain attributes by default; because attribute access and property access look identical to callers, you can convert a plain attribute into a property later *without breaking the API*. Adding a pass-through getter/setter that does nothing is just the Java anti-pattern in disguise.
 - Properties start simple and add validation later without API changes
-- Use `@cached_property` (Python 3.8+) for expensive computations accessed multiple times
+- In `__init__`, assign through the setter (`self.radius = value`) rather than the backing field (`self._radius = value`) so validation isn't bypassed
+- Use `@cached_property` (Python 3.8+) for expensive computations accessed multiple times—note it is **not** thread-safe and stores the result on the instance (so it needs `__dict__`, i.e. it won't work with `slots=True`)
 - Read-only properties (no setter) prevent accidental modification
 - Avoid heavy computation in properties unless cached—users expect fast attribute access
 

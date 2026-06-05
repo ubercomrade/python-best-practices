@@ -75,10 +75,44 @@ if isinstance(resource, Closable):
     resource.close()
 ```
 
+## When ABC Is the Right Choice
+Protocol is not a universal replacement for ABC. Reach for an ABC when you want to
+**share concrete implementation** with subclasses or **force** them to override specific
+methods (the Template Method pattern):
+
+```python
+from abc import ABC, abstractmethod
+
+class Exporter(ABC):
+    # Shared implementation all subclasses inherit
+    def export(self, rows: list[dict]) -> str:
+        header = self._format_header(rows)
+        body = "\n".join(self._format_row(r) for r in rows)
+        return f"{header}\n{body}"
+
+    # Subclasses MUST provide these; instantiating without them is a TypeError
+    @abstractmethod
+    def _format_header(self, rows: list[dict]) -> str: ...
+
+    @abstractmethod
+    def _format_row(self, row: dict) -> str: ...
+
+class CsvExporter(Exporter):
+    def _format_header(self, rows: list[dict]) -> str:
+        return ",".join(rows[0].keys())
+
+    def _format_row(self, row: dict) -> str:
+        return ",".join(map(str, row.values()))
+```
+
+Rule of thumb: **Protocol** for "any type with this shape qualifies" (no inherited code);
+**ABC** for "share this base behavior and require these overrides".
+
 ## Notes
 - Protocols work at type-check time; use `@runtime_checkable` for `isinstance()` checks
+- `@runtime_checkable` `isinstance()` only verifies that the **methods exist by name**—it does not check signatures or return types, so it can report a false match. Use it as a coarse guard, not a guarantee.
 - Prefer Protocol for interfaces that external code might implement
-- Use ABC when you need shared implementation or want to enforce inheritance
+- Use ABC when you need shared implementation or want to enforce inheritance (see "When ABC Is the Right Choice")
 - Protocol supports properties, class methods, and attributes
 
 ## References
