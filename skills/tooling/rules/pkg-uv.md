@@ -36,7 +36,7 @@ uv lock
 # Create/sync the environment to match uv.lock exactly
 uv sync                 # runtime deps
 uv sync --all-extras    # include optional extras
-uv sync --frozen        # fail if uv.lock is out of date (use in CI)
+uv sync --locked        # fail if uv.lock is out of date (use in CI)
 
 # Run commands inside the project environment (auto-syncs first)
 uv run pytest
@@ -73,8 +73,8 @@ project/
 | Environment | Command |
 |-------------|---------|
 | Development | `uv sync` |
-| CI | `uv sync --frozen` (verifies the lock is current) |
-| Production | `uv sync --no-dev` (or `--frozen --no-dev`) |
+| CI | `uv sync --locked` (verifies the lock is current before syncing) |
+| Production | `uv sync --locked --no-dev` |
 
 ## pip-compatible mode (existing/requirements.txt projects)
 
@@ -93,7 +93,7 @@ maintained automatically by `uv add`/`uv sync`, so you don't recompile by hand.
 ## Notes
 - uv uses a global cache, making repeated installs instant
 - Commit `uv.lock` (project workflow) or your `requirements.lock` (pip mode); never commit `.venv/`
-- `uv sync --frozen` in CI guarantees the environment matches the committed lock
+- `uv sync --locked` in CI fails if `uv.lock` is stale. Use `uv sync --frozen` only when you intentionally want to skip freshness checks and trust the existing lock file.
 - `uvx` is great for one-off tool execution (e.g. `uvx ruff check .`)
 - Run `uv lock --upgrade` regularly for security patches
 

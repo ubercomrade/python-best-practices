@@ -25,8 +25,11 @@ async def main() -> None:
 ## Good Example
 ```python
 import asyncio
+import logging
 from collections.abc import Coroutine
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 # Global task set to hold strong references until each task finishes
 background_tasks: set[asyncio.Task[None]] = set()
@@ -34,9 +37,17 @@ background_tasks: set[asyncio.Task[None]] = set()
 def spawn_background_task(coro: Coroutine[Any, Any, None]) -> asyncio.Task[None]:
     task = asyncio.create_task(coro)
     background_tasks.add(task)
-    # discard() runs when the task completes, releasing the reference
-    task.add_done_callback(background_tasks.discard)
+    task.add_done_callback(_handle_background_task_result)
     return task
+
+def _handle_background_task_result(task: asyncio.Task[None]) -> None:
+    background_tasks.discard(task)  # release the strong reference
+    try:
+        task.result()  # retrieve exceptions so they are not silently logged later
+    except asyncio.CancelledError:
+        pass  # normal during shutdown
+    except Exception:
+        logger.exception("Background task failed")
 
 async def main() -> None:
     # Safe: a strong reference is held while the task runs
@@ -62,7 +73,7 @@ async def main_modern() -> None:
 
 ## Notes
 - Annotate the reference holder as `set[asyncio.Task[None]]` (builtin generic, Python 3.9+). Do **not** use `collections.abc.Set` for this—it is the immutable abstract type and does not expose `add()`/`discard()`.
-- `task.add_done_callback()` registers handlers for task completion
+- `task.add_done_callback()` registers handlers for task completion; retrieve `task.result()` or `task.exception()` there so failures are reported deterministically.
 - Use `asyncio.TaskGroup` (3.11+) for tasks the current scope should *wait for*; use the reference-holding pattern above for true fire-and-forget tasks that outlive the call.
 - Long-running background tasks should be cancellable via `task.cancel()`. Inside the task, let `asyncio.CancelledError` propagate—don't swallow it in a bare `except`.
 - Enable warnings during debug with `asyncio.get_running_loop().set_debug(True)`

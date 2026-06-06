@@ -47,6 +47,8 @@ async def fetch_all_data_safe() -> dict[str, dict]:
 
     data: dict[str, dict] = {}
     for name, result in zip(sources, results):
+        if isinstance(result, asyncio.CancelledError):
+            raise result  # preserve cancellation instead of treating it as data
         if isinstance(result, Exception):
             logger.error("Failed to fetch %s: %s", name, result)
             continue  # or re-raise, retry, use a default...
@@ -55,7 +57,8 @@ async def fetch_all_data_safe() -> dict[str, dict]:
 ```
 
 ## Notes
-- `return_exceptions=True` returns exceptions in the results list instead of raising—you must check each item with `isinstance(result, Exception)`, or failures pass silently.
+- `return_exceptions=True` returns exceptions in the results list instead of raising—you must inspect each item, or failures pass silently.
+- `asyncio.CancelledError` is a `BaseException`, not an `Exception`; handle it explicitly before checking ordinary exceptions with `isinstance(result, Exception)`.
 - With the default `return_exceptions=False`, the first exception propagates immediately, but the *other* coroutines are **not** cancelled—they keep running in the background and may leak resources. `asyncio.TaskGroup` (3.11+) avoids this by cancelling siblings on failure; prefer it when you need all-or-nothing semantics.
 - Don't include dependent tasks in `gather` (await prerequisites separately first)
 - For many tasks, combine with `asyncio.Semaphore` to limit concurrency
