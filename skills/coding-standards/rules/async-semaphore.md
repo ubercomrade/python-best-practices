@@ -23,6 +23,7 @@ async def fetch_all_urls(urls: list[str]) -> list[dict]:
 ## Good Example
 ```python
 import asyncio
+from weakref import WeakKeyDictionary
 
 async def fetch_all_urls(urls: list[str], max_concurrent: int = 10) -> list[dict]:
     semaphore = asyncio.Semaphore(max_concurrent)
@@ -37,18 +38,32 @@ async def fetch_all_urls(urls: list[str], max_concurrent: int = 10) -> list[dict
 # Reusable pattern with class
 class RateLimitedClient:
     def __init__(self, max_concurrent: int = 10) -> None:
-        self._semaphore = asyncio.Semaphore(max_concurrent)
+        self._max_concurrent = max_concurrent
+        # One Semaphore per event loop; WeakKeyDictionary drops closed loops.
+        self._semaphores: WeakKeyDictionary[
+            asyncio.AbstractEventLoop,
+            asyncio.Semaphore,
+        ] = WeakKeyDictionary()
+
+    @property
+    def semaphore(self) -> asyncio.Semaphore:
+        loop = asyncio.get_running_loop()
+        try:
+            return self._semaphores[loop]
+        except KeyError:
+            semaphore = asyncio.Semaphore(self._max_concurrent)
+            self._semaphores[loop] = semaphore
+            return semaphore
 
     async def fetch(self, url: str) -> dict:
-        async with self._semaphore:
+        async with self.semaphore:
             return await self._do_fetch(url)
-
-# Using asyncio.BoundedSemaphore for stricter control
-bounded_sem = asyncio.BoundedSemaphore(10)  # Raises if released more than acquired
 ```
 
 ## Notes
-- `Semaphore` allows releasing more times than acquired; use `BoundedSemaphore` to prevent this
+- Avoid sharing one `Semaphore` across event loops. A semaphore can become bound to the loop where it first has to wait; reusing that same instance from another loop can raise `RuntimeError: ... bound to a different event loop`. For long-lived clients, either keep one client per loop or cache semaphores per loop as shown above.
+- `Semaphore` allows releasing more times than acquired; use `BoundedSemaphore` to catch release/acquire bugs. Use the same per-loop construction pattern.
+- `async with semaphore` releases the slot even if the body raises, so a failing task never leaks a permit.
 - Choose the concurrency limit based on the resource constraints (API rate limits, connection pools, etc.)
 - Consider using `asyncio.Queue` for producer-consumer patterns with more complex flow control
 - For HTTP clients, many libraries have built-in connection limits (e.g., `aiohttp.TCPConnector(limit=10)`)

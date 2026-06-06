@@ -22,6 +22,7 @@ class UserManager:
             raise ValueError("Invalid email")
 
         # Responsibility 2: Password hashing
+        # (Note: SHA-256 is NOT suitable for passwords—see Good Example.)
         hashed = hashlib.sha256(password.encode()).hexdigest()
 
         # Responsibility 3: Database operations
@@ -40,16 +41,20 @@ class UserManager:
 ```python
 from dataclasses import dataclass
 
-@dataclass
+# Stateless collaborators: plain classes (no fields, so no @dataclass needed)
 class UserValidator:
     def validate_email(self, email: str) -> bool:
         return "@" in email and "." in email.split("@")[1]
 
-@dataclass
 class PasswordHasher:
     def hash(self, password: str) -> str:
-        return hashlib.sha256(password.encode()).hexdigest()
+        # Use a slow, salted password hash—NEVER a plain digest like SHA-256/MD5.
+        # e.g. argon2-cffi or bcrypt:
+        #   from argon2 import PasswordHasher as Argon2
+        #   return Argon2().hash(password)
+        ...
 
+# Collaborators that carry dependencies: @dataclass removes __init__ boilerplate
 @dataclass
 class UserRepository:
     db: Connection
@@ -59,20 +64,16 @@ class UserRepository:
 
 @dataclass
 class EmailService:
+    smtp_host: str
+
     def send_welcome(self, email: str) -> None: ...
 
+@dataclass
 class UserService:
-    def __init__(
-        self,
-        validator: UserValidator,
-        hasher: PasswordHasher,
-        repository: UserRepository,
-        email_service: EmailService,
-    ) -> None:
-        self.validator = validator
-        self.hasher = hasher
-        self.repository = repository
-        self.email_service = email_service
+    validator: UserValidator
+    hasher: PasswordHasher
+    repository: UserRepository
+    email_service: EmailService
 
     def create_user(self, email: str, password: str) -> User:
         if not self.validator.validate_email(email):
@@ -89,6 +90,8 @@ class UserService:
 - Each component can now be tested in isolation
 - Changes to email logic won't affect password hashing
 - Enables easier dependency injection and mocking
+- Use `@dataclass` only for classes that hold fields; stateless collaborators are clearer as plain classes
+- Hash passwords with a dedicated slow algorithm (argon2, bcrypt, scrypt), never a bare `hashlib` digest—the example above flags this
 
 ## References
 - [Clean Code by Robert C. Martin](https://www.oreilly.com/library/view/clean-code-a/9780136083238/)

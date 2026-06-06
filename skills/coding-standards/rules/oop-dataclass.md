@@ -40,13 +40,20 @@ class User:
     email: str
     age: int
 
+# Mutable defaults: use default_factory, NEVER a literal
+@dataclass
+class Cart:
+    # items: list[Item] = []        # raises ValueError at class definition time
+    items: list[Item] = field(default_factory=list)  # correct: fresh list per instance
+
 # With defaults and computed fields
 @dataclass
 class Order:
     items: list[Item]
     customer_id: str
     discount: float = 0.0
-    _total: float = field(init=False)
+    # init=False keeps it out of __init__; repr=False hides the internal field
+    _total: float = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         self._total = sum(item.price for item in self.items) * (1 - self.discount)
@@ -65,9 +72,10 @@ class Coordinate:
 ```
 
 ## Notes
-- Use `frozen=True` for immutable objects that can be hashed and used as dict keys
-- Use `slots=True` (Python 3.10+) for memory efficiency with many instances
-- Use `field(default_factory=list)` for mutable default values
+- A mutable literal default (`items: list = []`) raises `ValueError: mutable default ... is not allowed` at class-definition time. Always use `field(default_factory=list)`—this also avoids the shared-mutable-default bug that plagues plain functions.
+- Use `frozen=True` for immutable objects: it makes instances read-only and auto-generates `__hash__`, so they work as dict keys and set members without writing `__hash__` by hand.
+- Use `slots=True` (passing `slots=True` to `@dataclass` is Python 3.10+) for memory efficiency with many instances
+- Use `Decimal`, not `float`, for money fields like `discount`/`price` to avoid rounding errors
 - Consider `attrs` library for more features or `pydantic` for validation
 
 ## References
