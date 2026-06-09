@@ -12,14 +12,27 @@ uvx add-skills ludo-technologies/python-best-practices
 
 ### coding-standards
 
-Python coding standards and best practices. 18 rules across 4 categories.
+Python coding standards and best practices. 26 rules across 4 categories, including pragmatic functional design and numerical Python guidance with NumPy and Numba.
 
 | Category | Impact | Rules |
 |----------|--------|-------|
-| **Performance Optimization** | CRITICAL | list comprehension, generator expression, dict.get(), set lookup, str.join() |
+| **Performance Optimization** | CRITICAL | list comprehension, generator expression, NumPy vectorization, Numba kernels, dict.get(), set lookup, str.join() |
 | **Async Processing** | HIGH | asyncio.gather, create_task, async context manager, semaphore |
-| **Design Principles** | HIGH | DRY/YAGNI/KISS, single responsibility, dependency injection, pure functions, early return |
-| **Object-Oriented Programming** | MEDIUM | composition over inheritance, dataclass, Protocol, property |
+| **Design Principles** | HIGH | DRY/YAGNI/KISS, single responsibility, dependency injection, pure functions, functional core/shell, explicit data flow, immutable config/results, functional pipelines, singledispatch, avoiding FP overabstraction, early return |
+| **Object-Oriented Programming** | MEDIUM | composition over inheritance, dataclass, Protocol, property; use classes for state, identity, protocols, or data containers rather than by default |
+
+The recommended architecture separates I/O shell, functional orchestration, and numerical kernels:
+
+```text
+I/O shell
+  parse CLI, read files, log, save outputs
+
+Functional orchestration
+  validate config, compose transformations, dispatch by model type
+
+Numerical kernels
+  NumPy vectorization or small Numba functions
+```
 
 ### tooling
 
