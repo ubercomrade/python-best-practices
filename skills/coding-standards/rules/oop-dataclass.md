@@ -2,7 +2,7 @@
 title: Use Dataclass for Data Containers
 impact: MEDIUM
 impactDescription: Less boilerplate, better semantics
-tags: [oop, dataclass, data-structures, boilerplate]
+tags: [oop, dataclass, data-structures, boilerplate, functional]
 ---
 
 # Use Dataclass for Data Containers [MEDIUM]
@@ -33,6 +33,9 @@ class User:
 ## Good Example
 ```python
 from dataclasses import dataclass, field
+from pathlib import Path
+
+import numpy as np
 
 @dataclass
 class User:
@@ -64,6 +67,20 @@ class Point:
     x: float
     y: float
 
+# Functional-style config object
+@dataclass(frozen=True)
+class ScanConfig:
+    motif_path: Path
+    genome_path: Path
+    threshold: float
+
+# Structured result object
+@dataclass(frozen=True)
+class MotifScanResult:
+    motif_id: str
+    positions: np.ndarray
+    scores: np.ndarray
+
 # With slots for memory efficiency (Python 3.10+)
 @dataclass(slots=True)
 class Coordinate:
@@ -73,7 +90,10 @@ class Coordinate:
 
 ## Notes
 - A mutable literal default (`items: list = []`) raises `ValueError: mutable default ... is not allowed` at class-definition time. Always use `field(default_factory=list)`—this also avoids the shared-mutable-default bug that plagues plain functions.
-- Use `frozen=True` for immutable objects: it makes instances read-only and auto-generates `__hash__`, so they work as dict keys and set members without writing `__hash__` by hand.
+- Use `frozen=True` for config and result objects when fields should not be reassigned.
+- `frozen=True` protects dataclass attributes, but it does not make mutable fields such as `list` or `np.ndarray` immutable.
+- Frozen dataclasses can be hashable when their fields are hashable; mutable or unhashable fields still prevent reliable hashing.
+- Avoid behavior-heavy methods on dataclasses when a pure function over the data is clearer.
 - Use `slots=True` (passing `slots=True` to `@dataclass` is Python 3.10+) for memory efficiency with many instances
 - Use `Decimal`, not `float`, for money fields like `discount`/`price` to avoid rounding errors
 - Consider `attrs` library for more features or `pydantic` for validation

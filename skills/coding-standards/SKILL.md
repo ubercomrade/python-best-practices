@@ -1,6 +1,6 @@
 ---
 name: coding-standards
-description: Use for Python code review, refactoring, async Python, performance guidance, maintainability, OOP/design decisions, and generating idiomatic Python code with practical examples.
+description: Use for Python code review, refactoring, async Python, performance guidance, maintainability, pragmatic functional style, numerical Python with NumPy/Numba, minimizing unnecessary OOP, and generating idiomatic Python code with practical examples.
 globs:
   - "**/*.py"
   - "pyproject.toml"
@@ -10,17 +10,19 @@ globs:
 
 # Python Coding Standards
 
-A comprehensive collection of Python coding standards and best practices. Designed for AI agents and LLMs to generate high-quality, performant, and maintainable Python code.
+A comprehensive collection of Python coding standards and best practices. Designed for AI agents and LLMs to generate high-quality, performant, and maintainable Python code using pragmatic functional design, appropriate OOP, and practical numerical Python patterns.
 
 ## Categories
 
 ### Performance Optimization [CRITICAL]
-Apply Python optimization patterns to improve processing speed and memory efficiency where they fit the workload.
+Apply Python and numerical optimization patterns to improve processing speed and memory efficiency where they fit the workload.
 
 | Rule | Description |
 |------|-------------|
 | [perf-list-comprehension](rules/perf-list-comprehension.md) | Prefer list comprehensions for clear list construction |
 | [perf-generator-expression](rules/perf-generator-expression.md) | Use generators for large or single-pass datasets |
+| [perf-numpy-vectorization](rules/perf-numpy-vectorization.md) | Prefer readable NumPy vectorization for array-heavy code |
+| [perf-numba-kernels](rules/perf-numba-kernels.md) | Use Numba for hot numerical kernels |
 | [perf-dict-get](rules/perf-dict-get.md) | Use dict.get() for efficient default values |
 | [perf-set-lookup](rules/perf-set-lookup.md) | Use set for repeated membership checks |
 | [perf-str-join](rules/perf-str-join.md) | Use join for string building from many parts |
@@ -36,7 +38,7 @@ Efficient asynchronous programming patterns using asyncio.
 | [async-semaphore](rules/async-semaphore.md) | Limit concurrency with semaphores |
 
 ### Design Principles [HIGH]
-Software design principles for maintainability and extensibility.
+Software design principles for maintainability, explicit data flow, pragmatic functional style, and extensibility.
 
 | Rule | Description |
 |------|-------------|
@@ -44,6 +46,12 @@ Software design principles for maintainability and extensibility.
 | [design-single-responsibility](rules/design-single-responsibility.md) | Single Responsibility Principle |
 | [design-dependency-injection](rules/design-dependency-injection.md) | Loose coupling with dependency injection |
 | [design-pure-functions](rules/design-pure-functions.md) | Prefer pure functions without side effects |
+| [design-functional-core-shell](rules/design-functional-core-shell.md) | Separate functional core from imperative shell |
+| [design-explicit-data-flow](rules/design-explicit-data-flow.md) | Make inputs, outputs, and config explicit |
+| [design-immutable-config-results](rules/design-immutable-config-results.md) | Use immutable config and result objects |
+| [design-functional-pipeline](rules/design-functional-pipeline.md) | Use simple functional pipelines for orchestration |
+| [design-singledispatch](rules/design-singledispatch.md) | Use singledispatch for type-based operations |
+| [design-avoid-functional-overabstraction](rules/design-avoid-functional-overabstraction.md) | Avoid heavy FP abstractions without project need |
 | [design-early-return](rules/design-early-return.md) | Reduce nesting with early returns |
 
 ### Object-Oriented Programming [MEDIUM]
@@ -75,6 +83,30 @@ if item_id in valid_ids: ...
 
 # join for strings
 result = ",".join(values)
+
+# NumPy broadcasting for arrays
+log_odds = np.log2(pwm / background[:, None])
+
+# Numba for hot numerical kernels
+@njit(cache=True)
+def score_window(encoded: np.ndarray, pwm: np.ndarray) -> float:
+    score = 0.0
+    for pos in range(encoded.shape[0]):
+        base = encoded[pos]
+        score += pwm[base, pos]
+    return score
+```
+
+### Layered Architecture
+```text
+I/O shell
+  parse CLI, read files, log, save outputs
+
+Functional orchestration
+  validate config, compose transformations, dispatch by model type
+
+Numerical kernels
+  NumPy vectorization or small Numba functions
 ```
 
 ### Async Patterns
@@ -95,6 +127,10 @@ async with semaphore:
 
 ### Design Patterns
 ```python
+# Pure core function
+def center_scores(scores: np.ndarray) -> np.ndarray:
+    return scores - scores.mean()
+
 # Dependency injection
 class Service:
     def __init__(self, repository: Repository) -> None:
@@ -108,6 +144,8 @@ def process(data: Data | None) -> Result:
 ```
 
 ### OOP Patterns
+Use classes when there is durable state, identity, a protocol/interface, or a data container. Start with functions and explicit data when a class would only wrap one operation.
+
 ```python
 # Dataclass
 @dataclass

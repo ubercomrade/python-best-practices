@@ -10,6 +10,8 @@ tags: [design, functional, pure-functions, testing]
 ## Description
 Pure functions always return the same output for the same input and have no side effects (no mutation of external state, no I/O). They are easier to test, reason about, and can be safely parallelized or cached.
 
+This rule focuses on individual functions. For module and application structure, combine it with a functional core wrapped by an imperative shell.
+
 ## Bad Example
 ```python
 # Impure: modifies external state
@@ -73,7 +75,7 @@ def main() -> None:
 ```
 
 ## Notes
-- "Functional core, imperative shell" pattern: pure logic wrapped by impure I/O handlers
+- See [design-functional-core-shell](design-functional-core-shell.md) for separating pure logic from impure I/O handlers
 - Use `frozen=True` in dataclasses to prevent mutation
 - Pass time, random seeds, and other non-deterministic values as parameters
 - Pure functions are trivially testable: just assert output equals expected

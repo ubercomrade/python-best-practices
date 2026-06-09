@@ -2,7 +2,7 @@
 title: Software Design Philosophy
 impact: HIGH
 impactDescription: Maintainable, pragmatic code
-tags: [design, dry, yagni, kiss, philosophy]
+tags: [design, dry, yagni, kiss, philosophy, functional]
 ---
 
 # Software Design Philosophy [HIGH]
@@ -33,6 +33,25 @@ def export_csv(rows: list[dict[str, str]]) -> str:
     header = ",".join(rows[0].keys())
     body = "\n".join(",".join(row.values()) for row in rows)
     return f"{header}\n{body}"
+```
+
+## Functions First, Classes When Justified
+
+Start with functions and explicit data when the operation is stateless. Introduce classes when there is durable identity, a mutable state boundary, a protocol/interface, or a clear data container.
+
+```python
+import numpy as np
+
+
+# Bad: service layer around one operation
+class ScoreCenterer:
+    def center(self, scores: np.ndarray) -> np.ndarray:
+        return scores - scores.mean()
+
+
+# Good: direct transformation
+def center_scores(scores: np.ndarray) -> np.ndarray:
+    return scores - scores.mean()
 ```
 
 ## DRY - Don't Repeat Yourself
@@ -137,6 +156,7 @@ result = "hello"[::-1]
 - DRY without need leads to premature abstraction (violates YAGNI)
 - Over-simplification can lead to duplication (violates DRY)
 - When in doubt, start simple and refactor when patterns emerge
+- Do not build a service/object layer around one function without a concrete reason
 
 ## References
 - [The Pragmatic Programmer](https://pragprog.com/titles/tpp20/the-pragmatic-programmer-20th-anniversary-edition/)

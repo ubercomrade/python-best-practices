@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
   "author": "Python Best Practices",
-  "abstract": "Python coding standards and best practices. Designed for AI agents and LLMs to generate high-quality Python code.",
+  "abstract": "Python coding standards and best practices. Designed for AI agents and LLMs to generate high-quality Python code with pragmatic functional design and numerical Python guidance.",
   "categories": 4,
-  "rules": 18,
+  "rules": 26,
   "sections": [
     {
       "prefix": "perf",
       "name": "Performance Optimization",
       "impact": "CRITICAL",
-      "count": 5
+      "count": 7
     },
     {
       "prefix": "async",
@@ -21,7 +21,7 @@
       "prefix": "design",
       "name": "Design Principles",
       "impact": "HIGH",
-      "count": 5
+      "count": 11
     },
     {
       "prefix": "oop",
