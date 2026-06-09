@@ -10,7 +10,25 @@ tags: [pytest, testing, fixtures, coverage]
 ## Description
 Pytest is the standard Python testing framework. Configure it in `pyproject.toml` for consistent test execution, effective fixtures, parametrized tests, and coverage reporting.
 
-## Basic Configuration
+## Bad Example
+```bash
+# Unconfigured tests are easy to run inconsistently.
+pytest
+pytest tests/test_user.py -s
+python -m unittest discover
+```
+
+```python
+def test_user_creation():
+    db = Database("test://localhost")
+    db.connect()
+    user = User(name="Alice", email="alice@example.com")
+    db.save(user)
+    assert db.get_user(user.id).email == "alice@example.com"
+    db.close()
+```
+
+## Good Example
 
 ```toml
 # pyproject.toml

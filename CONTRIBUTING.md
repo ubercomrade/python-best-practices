@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your interest in contributing to python-best-practices!
+Thank you for your interest in contributing to python-best-practices.
 
 ## Ways to Contribute
 
@@ -49,7 +49,7 @@ Follow this structure:
 ---
 title: Rule Title
 impact: CRITICAL | HIGH | MEDIUM | LOW
-impactDescription: Brief impact (e.g., "2x faster", "O(1) vs O(n)")
+impactDescription: Brief impact
 tags: [tag1, tag2, tag3]
 ---
 
@@ -88,8 +88,28 @@ Increment the `rules` count in `skills/{skill}/metadata.json`.
 
 - **Be concise** - Rules should be scannable by AI agents
 - **Show, don't tell** - Good/bad examples are more valuable than lengthy explanations
-- **Include impact** - Quantify benefits when possible (e.g., "1.5-2x faster")
+- **Include impact** - Prefer concrete but defensible impact descriptions; avoid fragile benchmark claims without references
 - **Add references** - Link to official docs or authoritative sources
+
+## Validation
+
+Run the repository checks before opening a pull request:
+
+```bash
+python scripts/validate.py
+python -m json.tool skills/coding-standards/metadata.json
+python -m json.tool skills/tooling/metadata.json
+git diff --check
+```
+
+## New Rule Checklist
+
+- File was created from `skills/{skill}/rules/_template.md`
+- Rule is listed in the matching category table in `skills/{skill}/SKILL.md`
+- `metadata.json.rules` and section counts are updated
+- Rule includes `Description`, `Bad Example`, `Good Example`, `Notes`, and `References`
+- References point to official docs or authoritative sources
+- `scripts/validate.py`, `python -m json.tool`, and `git diff --check` pass
 
 ## Pull Requests
 

@@ -3,15 +3,15 @@
 ## Performance Optimization (perf)
 **Impact:** CRITICAL
 
-Apply Python optimization patterns to improve processing speed and memory efficiency.
+Apply Python optimization patterns to improve processing speed and memory efficiency where they fit the workload.
 Covers list comprehensions, generators, efficient data structure selection, and other techniques that leverage Python's characteristics.
 
 **Rules:**
-- `perf-list-comprehension` - Prefer list comprehensions over loops
-- `perf-generator-expression` - Use generators for large datasets
+- `perf-list-comprehension` - Prefer list comprehensions for clear list construction
+- `perf-generator-expression` - Use generators for large or single-pass datasets
 - `perf-dict-get` - Use dict.get() for efficient default values
-- `perf-set-lookup` - Use set for fast lookups instead of list
-- `perf-str-join` - Use join for string concatenation
+- `perf-set-lookup` - Use set for repeated membership checks
+- `perf-str-join` - Use join for string building from many parts
 
 ## Async Processing (async)
 **Impact:** HIGH

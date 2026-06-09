@@ -1,6 +1,6 @@
 ---
 name: coding-standards
-description: Python coding standards and best practices for AI coding agents
+description: Use for Python code review, refactoring, async Python, performance guidance, maintainability, OOP/design decisions, and generating idiomatic Python code with practical examples.
 globs:
   - "**/*.py"
   - "pyproject.toml"
@@ -15,15 +15,15 @@ A comprehensive collection of Python coding standards and best practices. Design
 ## Categories
 
 ### Performance Optimization [CRITICAL]
-Apply Python optimization patterns to improve processing speed and memory efficiency.
+Apply Python optimization patterns to improve processing speed and memory efficiency where they fit the workload.
 
 | Rule | Description |
 |------|-------------|
-| [perf-list-comprehension](rules/perf-list-comprehension.md) | Prefer list comprehensions over loops (1.5-2x faster) |
-| [perf-generator-expression](rules/perf-generator-expression.md) | Use generators for large datasets (O(1) memory) |
+| [perf-list-comprehension](rules/perf-list-comprehension.md) | Prefer list comprehensions for clear list construction |
+| [perf-generator-expression](rules/perf-generator-expression.md) | Use generators for large or single-pass datasets |
 | [perf-dict-get](rules/perf-dict-get.md) | Use dict.get() for efficient default values |
-| [perf-set-lookup](rules/perf-set-lookup.md) | Use set for fast lookups (O(1) vs O(n)) |
-| [perf-str-join](rules/perf-str-join.md) | Use join for string concatenation (O(n) vs O(n²)) |
+| [perf-set-lookup](rules/perf-set-lookup.md) | Use set for repeated membership checks |
+| [perf-str-join](rules/perf-str-join.md) | Use join for string building from many parts |
 
 ### Async Processing [HIGH]
 Efficient asynchronous programming patterns using asyncio.
@@ -127,4 +127,4 @@ def full_name(self) -> str:
 
 ## See Also
 
-- [Recommended Tooling](tooling.md) - Tools to enforce these standards automatically (ruff, mypy, pytest, pyscn, uv)
+- [Python Tooling](../tooling/SKILL.md) - Tools to enforce these standards automatically (ruff, mypy, pytest, pyscn, uv)

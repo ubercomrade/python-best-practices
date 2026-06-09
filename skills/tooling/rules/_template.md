@@ -1,7 +1,7 @@
 ---
 title: Rule Title
 impact: CRITICAL | HIGH | MEDIUM | LOW
-impactDescription: Impact description
+impactDescription: Brief, defensible impact description
 tags: [tag1, tag2, tag3]
 ---
 
@@ -23,6 +23,7 @@ Explanation of why this rule matters and when to apply it.
 ## Notes
 - Additional tips and hints
 - Edge cases and exceptions
+- Prefer official tool documentation for technical claims
 
 ## References
 - [Link text](URL)

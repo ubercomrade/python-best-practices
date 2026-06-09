@@ -30,11 +30,11 @@ Catches type errors at development time, improving code reliability and maintain
 ## Formatting (fmt)
 **Impact:** HIGH
 
-Consistent code formatting with ruff format and import sorting.
+Consistent code formatting with `ruff format`; use `ruff check --select=I --fix` for import sorting.
 Eliminates style debates and ensures consistent code appearance across the project.
 
 **Rules:**
-- `fmt-ruff` - Code formatting and import sorting with ruff
+- `fmt-ruff` - Code formatting with ruff and explicit import sorting workflow
 
 ## Testing (test)
 **Impact:** HIGH
@@ -48,9 +48,9 @@ Covers configuration, fixtures, parametrization, and coverage settings.
 ## Package Management (pkg)
 **Impact:** MEDIUM
 
-Modern Python packaging with uv and pyproject.toml.
+Modern Python packaging with uv, pyproject.toml, dependency groups, and lockfiles.
 Fast, reliable dependency management and project configuration.
 
 **Rules:**
-- `pkg-uv` - Fast package management with uv
-- `pkg-pyproject` - Project configuration with pyproject.toml
+- `pkg-uv` - Project workflow with uv
+- `pkg-pyproject` - Project configuration with pyproject.toml and dependency groups

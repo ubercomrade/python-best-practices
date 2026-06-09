@@ -1,102 +1,121 @@
 ---
 title: Package Management with uv
 impact: MEDIUM
-impactDescription: 10-100x faster dependency management
-tags: [uv, package-management, pip, virtualenv, lock-file]
+impactDescription: Fast, reproducible project workflow
+tags: [uv, package-management, pyproject.toml, dependency-groups, lock-file]
 ---
 
 # Package Management with uv [MEDIUM]
 
 ## Description
-uv is an extremely fast Python package manager written in Rust by Astral. It's 10-100x faster than pip/pip-tools/virtualenv and replaces them all. Prefer its **project workflow** (`uv add`/`uv lock`/`uv sync`) built around `pyproject.toml` and the native `uv.lock`; a pip-compatible interface (`uv pip ...`) is also available for existing setups.
+uv is a Python package and project manager from Astral. Prefer its project workflow for new projects: declare dependencies in `pyproject.toml`, keep the resolved `uv.lock` in version control, sync environments with `uv sync`, and run commands with `uv run`. Use `uv pip ...` mainly for existing `requirements.txt` or pip-compatible workflows.
 
-## Install
-
+## Bad Example
 ```bash
-# macOS / Linux
-curl -LsSf https://astral.sh/uv/install.sh | sh
-# Windows
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+# Ad hoc installs are hard to reproduce.
+python -m venv .venv
+. .venv/bin/activate
+pip install fastapi pytest ruff
+pytest
 ```
 
-## Project Workflow (recommended)
+```toml
+# pyproject.toml has no source of truth for dependencies.
+[project]
+name = "myproject"
+version = "0.1.0"
+dependencies = []
+```
 
+## Good Example
 ```bash
-# Scaffold a new project (creates pyproject.toml)
+# Scaffold a project.
 uv init
 
-# Add / remove dependencies (updates pyproject.toml AND uv.lock, installs into .venv)
+# Add dependencies. uv updates pyproject.toml and the lockfile.
 uv add fastapi pydantic
-uv add --dev pytest ruff mypy      # dev dependency group
+uv add --dev pytest ruff mypy
 uv remove pydantic
 
-# Resolve and write the lock file explicitly (uv add/sync also keep it current)
-uv lock
+# Sync the environment from uv.lock.
+uv sync
+uv sync --locked --no-dev
 
-# Create/sync the environment to match uv.lock exactly
-uv sync                 # runtime deps
-uv sync --all-extras    # include optional extras
-uv sync --locked        # fail if uv.lock is out of date (use in CI)
-
-# Run commands inside the project environment (auto-syncs first)
+# Run commands inside the project environment.
 uv run pytest
 uv run python -m myapp
 
-# Upgrade dependencies
-uv lock --upgrade                  # all
-uv lock --upgrade-package fastapi  # one package
+# Upgrade locked dependencies intentionally.
+uv lock --upgrade
+uv lock --upgrade-package fastapi
 ```
 
-## Project Structure
+```toml
+[project]
+name = "myproject"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "pydantic>=2.0",
+]
 
+[dependency-groups]
+dev = [
+    "mypy>=1.13",
+    "pytest>=8.0",
+    "ruff>=0.8",
+]
 ```
-project/
-├── pyproject.toml   # Source of truth: dependencies, metadata, tool config
-├── uv.lock          # Fully-resolved, cross-platform lock file (commit this)
-└── .venv/           # Managed environment (do NOT commit)
-```
 
-## Key Commands
-
+## Project workflow
 | Command | Purpose |
 |---------|---------|
 | `uv init` | Scaffold a project |
-| `uv add` / `uv remove` | Add/remove a dependency (edits `pyproject.toml` + `uv.lock`) |
+| `uv add` / `uv remove` | Edit dependencies in `pyproject.toml` |
+| `uv add --dev` | Add to the `dev` dependency group |
 | `uv lock` | Resolve dependencies into `uv.lock` |
-| `uv sync` | Make `.venv` match `uv.lock` exactly |
+| `uv sync` | Make `.venv` match the lockfile |
 | `uv run` | Run a command in the project environment |
-| `uvx` | Run a tool one-off without installing it |
-| `uv venv` | Create a bare virtualenv (lower-level) |
+| `uvx` | Run a tool without adding it to the project |
 
-## Per-environment usage
-
+## Environment usage
 | Environment | Command |
 |-------------|---------|
 | Development | `uv sync` |
-| CI | `uv sync --locked` (verifies the lock is current before syncing) |
+| CI | `uv sync --locked` |
 | Production | `uv sync --locked --no-dev` |
 
-## pip-compatible mode (existing/requirements.txt projects)
-
-If you're not ready to adopt `uv.lock`, uv mirrors the pip-tools workflow:
-
+## Dependency groups
 ```bash
-uv venv                                          # create virtualenv
-uv pip install -e ".[dev]"                       # install
-uv pip compile pyproject.toml -o requirements.lock --generate-hashes
-uv pip sync requirements.lock                    # exact install
+uv add --dev pytest ruff mypy
+uv sync --no-dev
+uv sync --group docs
+uv sync --all-groups
 ```
 
-For new projects prefer the project workflow above; `uv.lock` is cross-platform and is
-maintained automatically by `uv add`/`uv sync`, so you don't recompile by hand.
+## pip-compatible mode
+For existing `requirements.txt` projects, uv also supports a pip-compatible interface:
+
+```bash
+uv venv
+uv pip install -e ".[dev]"
+uv pip compile pyproject.toml -o requirements.lock --generate-hashes
+uv pip sync requirements.lock
+```
+
+For new projects, prefer the project workflow above. `uv.lock` is maintained by commands such as `uv add`, `uv lock`, `uv sync`, and `uv run`.
 
 ## Notes
-- uv uses a global cache, making repeated installs instant
-- Commit `uv.lock` (project workflow) or your `requirements.lock` (pip mode); never commit `.venv/`
-- `uv sync --locked` in CI fails if `uv.lock` is stale. Use `uv sync --frozen` only when you intentionally want to skip freshness checks and trust the existing lock file.
-- `uvx` is great for one-off tool execution (e.g. `uvx ruff check .`)
-- Run `uv lock --upgrade` regularly for security patches
+- `uv run` verifies the lockfile and environment before running commands
+- `uv sync` is exact by default and removes packages not present in the lockfile
+- The `dev` dependency group is included by default; use `--no-dev` to exclude it
+- Commit `uv.lock` for project workflow; never commit `.venv/`
+- Use `uv sync --locked` in CI to fail when `uv.lock` is stale
+- Use `uv sync --frozen` only when intentionally skipping freshness checks
 
 ## References
 - [uv Documentation](https://docs.astral.sh/uv/)
-- [uv GitHub](https://github.com/astral-sh/uv)
+- [uv - Working on projects](https://docs.astral.sh/uv/guides/projects/)
+- [uv - Locking and syncing](https://docs.astral.sh/uv/concepts/projects/sync/)
+- [uv - Managing dependencies](https://docs.astral.sh/uv/concepts/projects/dependencies/)

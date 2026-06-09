@@ -1,22 +1,22 @@
 ---
 title: Use join for String Concatenation
 impact: CRITICAL
-impactDescription: O(n²) → O(n) string building
+impactDescription: Efficient string building from many parts
 tags: [performance, string, join]
 ---
 
 # Use join for String Concatenation [CRITICAL]
 
 ## Description
-String concatenation with `+` creates a new string object each time, resulting in O(n²) complexity. The `str.join()` method pre-calculates the final size and allocates memory once, achieving O(n) efficiency.
+Repeated string concatenation in loops creates new string objects and can become inefficient as the number of parts grows. Use `str.join()` when building a string from many pieces, especially inside loops or comprehensions.
 
 ## Bad Example
 ```python
-# Slow: creates new string object each iteration
+# Repeated concatenation creates intermediate strings
 def build_csv_line(values: list[str]) -> str:
     result = ""
     for value in values:
-        result += value + ","  # O(n²)
+        result += value + ","
     return result[:-1]
 
 # String concatenation in loop
@@ -27,7 +27,7 @@ for event in events:
 
 ## Good Example
 ```python
-# Fast: join concatenates at once
+# join builds from all parts directly
 def build_csv_line(values: list[str]) -> str:
     return ",".join(values)
 
@@ -41,10 +41,11 @@ result = ", ".join(name for name in names if name)
 ```
 
 ## Notes
-- f-strings are fine for small concatenations (2-3 items) and equally performant
+- f-strings are fine for small fixed-size concatenations
 - `io.StringIO` is an alternative but `join()` is usually sufficient
 - For bytes, use `b"".join()`
 - For paths, use `pathlib.Path` with `/` operator: `Path("dir") / "file.txt"`
+- If each loop iteration must interleave writes with other work, consider streaming to a file-like object
 
 ## References
 - [Python Docs - str.join()](https://docs.python.org/3/library/stdtypes.html#str.join)

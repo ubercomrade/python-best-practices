@@ -8,6 +8,9 @@ Thumbs.db
 *.swp
 *.swo
 *~
+AGENTS.md
+PLAN.md
+FP.md
 
 # Python
 __pycache__/
@@ -22,6 +25,7 @@ venv/
 .python-version
 
 # Testing
+scripts
 .pytest_cache/
 .coverage
 htmlcov/

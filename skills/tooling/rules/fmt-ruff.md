@@ -1,21 +1,37 @@
 ---
 title: Formatting with Ruff
 impact: HIGH
-impactDescription: Consistent code style
+impactDescription: Consistent formatter output
 tags: [ruff, formatting, black, isort]
 ---
 
 # Formatting with Ruff [HIGH]
 
 ## Description
-Ruff's formatter is a drop-in replacement for Black, written in Rust for extreme speed. Combined with isort rules, it handles both code formatting and import organization in one tool.
+Ruff's formatter is designed as a drop-in replacement for Black and is available as `ruff format`. It formats code but does not sort imports; use `ruff check --select=I --fix` for import sorting.
 
-## Basic Configuration
+## Bad Example
+```toml
+[tool.ruff.format]
+quote-style = "single"
 
+[tool.ruff.lint.isort]
+# These non-default isort settings can conflict with formatter output.
+force-single-line = true
+lines-after-imports = 1
+```
+
+```bash
+# This formats code but does not sort imports.
+ruff format .
+```
+
+## Good Example
 ```toml
 # pyproject.toml
 [tool.ruff]
 line-length = 88
+target-version = "py311"
 
 [tool.ruff.format]
 quote-style = "double"
@@ -27,32 +43,21 @@ exclude = [
     "migrations/",
     "*.pyi",
 ]
-```
 
-## Import Sorting
-
-```toml
 [tool.ruff.lint]
 select = ["I"]  # Enable isort rules
 
 [tool.ruff.lint.isort]
 known-first-party = ["myproject"]
-known-third-party = ["fastapi", "pydantic"]
-force-single-line = false
-lines-after-imports = 2
-section-order = [
-    "future",
-    "standard-library",
-    "third-party",
-    "first-party",
-    "local-folder",
-]
 ```
 
-## Import Order
+```bash
+ruff check . --select=I --fix
+ruff format .
+```
 
+## Import order
 ```python
-# Properly sorted imports
 from __future__ import annotations
 
 import os
@@ -70,10 +75,8 @@ if TYPE_CHECKING:
     from myproject.models import User
 ```
 
-## Line Length
-
+## Line length
 ```toml
-# Consistent across all tools
 [tool.ruff]
 line-length = 88
 
@@ -84,24 +87,24 @@ max-line-length = 88
 | Length | Rationale |
 |--------|-----------|
 | 79 | PEP 8 original |
-| 88 | Black/Ruff default (recommended) |
+| 88 | Black/Ruff default |
 | 100 | More horizontal space |
 | 120 | Wide monitors |
 
 ## Commands
-
 ```bash
-ruff format .              # Format all files
-ruff format . --check      # Check without modifying
-ruff format . --diff       # Show diff
+ruff format .                  # Format all files
+ruff format . --check          # Check without modifying
+ruff format . --diff           # Show diff
 ruff check . --select=I --fix  # Fix import order
 ```
 
 ## Notes
-- Ruff format is compatible with Black's style
+- Ruff format follows Black-style defaults but has documented deviations
 - Use the same `line-length` for linting and formatting
-- `known-first-party` is usually auto-detected but explicit is better
-- No configuration is often best - embrace the defaults
+- Keep import sorting in lint configuration (`I`) and run it before formatting
+- `known-first-party` is usually auto-detected, but explicit configuration can help monorepos
+- Avoid non-default isort settings that Ruff documents as formatter-incompatible
 
 ## References
 - [Ruff Formatter](https://docs.astral.sh/ruff/formatter/)

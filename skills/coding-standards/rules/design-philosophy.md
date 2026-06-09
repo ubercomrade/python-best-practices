@@ -10,6 +10,31 @@ tags: [design, dry, yagni, kiss, philosophy]
 ## Description
 Core principles that guide good software design. These principles help avoid over-engineering, reduce maintenance burden, and keep code understandable.
 
+## Bad Example
+```python
+class ExportService:
+    def export(
+        self,
+        rows: list[dict[str, str]],
+        output_format: str = "csv",
+        compression: str | None = None,
+        encryption: str | None = None,
+    ) -> str:
+        if output_format == "csv":
+            header = ",".join(rows[0].keys())
+            body = "\n".join(",".join(row.values()) for row in rows)
+            return f"{header}\n{body}"
+        raise NotImplementedError(output_format)
+```
+
+## Good Example
+```python
+def export_csv(rows: list[dict[str, str]]) -> str:
+    header = ",".join(rows[0].keys())
+    body = "\n".join(",".join(row.values()) for row in rows)
+    return f"{header}\n{body}"
+```
+
 ## DRY - Don't Repeat Yourself
 
 Avoid duplicating knowledge or logic. When the same concept exists in multiple places, changes require updating all instances.

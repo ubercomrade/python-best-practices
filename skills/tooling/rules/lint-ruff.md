@@ -8,10 +8,26 @@ tags: [ruff, linting, pyproject.toml, configuration]
 # Linting with Ruff [CRITICAL]
 
 ## Description
-Ruff is an extremely fast Python linter written in Rust. It replaces flake8, isort, pyupgrade, and many other tools with a single, unified linter. Configure it in `pyproject.toml` for consistent code quality.
+Ruff is a fast Python linter written in Rust. Use `ruff check` for linting, import sorting, and safe auto-fixes. Keep formatting in `ruff format` so lint and formatting responsibilities remain explicit.
 
-## Basic Configuration
+## Bad Example
+```toml
+[tool.ruff]
+# Missing target-version means pyupgrade and parser behavior may not match the project.
+line-length = 88
 
+[tool.ruff.lint]
+# ALL is noisy for most projects and can enable conflicting or preview-heavy rules.
+select = ["ALL"]
+ignore = ["F401", "F841"]
+```
+
+```bash
+# Unsafe fixes without review can change behavior.
+ruff check . --fix --unsafe-fixes
+```
+
+## Good Example
 ```toml
 # pyproject.toml
 [tool.ruff]
@@ -37,39 +53,21 @@ select = [
 ]
 ignore = []
 
-# For mature projects, consider adding:
-# "C4"   - flake8-comprehensions
-# "DTZ"  - flake8-datetimez
-# "T20"  - flake8-print
-# "ARG"  - flake8-unused-arguments
-# "PL"   - Pylint
-# "PERF" - Perflint
-```
-
-## Per-File Ignores
-
-```toml
 [tool.ruff.lint.per-file-ignores]
-# Test files
 "tests/**/*.py" = [
     "S101",    # assert is fine in tests
     "ARG001",  # unused fixtures
     "PLR2004", # magic values ok
 ]
-
-# __init__.py
 "__init__.py" = [
-    "F401",    # unused imports (re-exports)
+    "F401",    # re-exported imports
 ]
-
-# Scripts
 "scripts/**/*.py" = [
     "T201",    # print allowed
 ]
 ```
 
-## Auto-Fix
-
+## Auto-fix policy
 ```toml
 [tool.ruff.lint]
 fixable = ["ALL"]
@@ -80,17 +78,16 @@ unfixable = [
 ```
 
 ## Commands
-
 ```bash
-ruff check .                    # Check for issues
-ruff check . --fix              # Auto-fix safe issues
+ruff check .                       # Check for issues
+ruff check . --fix                 # Auto-fix safe issues
 ruff check . --fix --unsafe-fixes  # Include unsafe fixes
-ruff check . --select=ALL       # Check all rules
-ruff check . --statistics       # Show rule counts
+ruff check . --select=I --fix      # Sort imports
+ruff check . --select=ALL          # Check all rules
+ruff check . --statistics          # Show rule counts
 ```
 
-## Rule Categories
-
+## Rule categories
 | Prefix | Name | Purpose |
 |--------|------|---------|
 | E/W | pycodestyle | PEP 8 style |
@@ -104,10 +101,12 @@ ruff check . --statistics       # Show rule counts
 
 ## Notes
 - Always specify `target-version` to match your project's minimum Python
+- Use `ruff check --select=I --fix` for import sorting; `ruff format` does not sort imports
 - Use `--fix` for safe auto-fixes, review `--unsafe-fixes` before applying
-- Start with recommended rules, add more as codebase matures
+- Start with recommended rules, then add more as the codebase matures
 - Use `per-file-ignores` instead of global `ignore` when possible
 
 ## References
 - [Ruff Documentation](https://docs.astral.sh/ruff/)
 - [Ruff Rules](https://docs.astral.sh/ruff/rules/)
+- [Ruff Settings](https://docs.astral.sh/ruff/settings/)

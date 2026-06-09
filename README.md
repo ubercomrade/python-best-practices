@@ -1,6 +1,6 @@
 # python-best-practices
 
-Python best practices skill for AI coding agents. Provides structured guidelines for writing high-quality, performant, and maintainable Python code.
+Python best-practice skills for AI coding agents. This repository contains multiple installable skills for writing, reviewing, refactoring, and tooling Python projects.
 
 ## Installation
 

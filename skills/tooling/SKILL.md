@@ -1,6 +1,6 @@
 ---
 name: tooling
-description: Python development tooling configuration and best practices
+description: Use for Python tooling setup, pyproject.toml configuration, Ruff linting and formatting, mypy type checking, pytest configuration, uv project workflows, lockfiles, and dependency groups.
 globs:
   - "**/*.py"
   - "pyproject.toml"
@@ -48,11 +48,11 @@ Static type checking with mypy for type safety and better IDE support.
 | [type-mypy](rules/type-mypy.md) | Static type checking with mypy |
 
 ### Formatting [HIGH]
-Consistent code formatting with ruff format and import sorting.
+Consistent code formatting with `ruff format`; use `ruff check --select=I --fix` for import sorting.
 
 | Rule | Description |
 |------|-------------|
-| [fmt-ruff](rules/fmt-ruff.md) | Code formatting and import sorting with ruff |
+| [fmt-ruff](rules/fmt-ruff.md) | Code formatting with ruff and explicit import sorting workflow |
 
 ### Testing [HIGH]
 Test framework configuration with pytest for reliable testing.
@@ -62,12 +62,12 @@ Test framework configuration with pytest for reliable testing.
 | [test-pytest](rules/test-pytest.md) | Testing with pytest, fixtures, and coverage |
 
 ### Package Management [MEDIUM]
-Modern Python packaging with uv and pyproject.toml.
+Modern Python packaging with uv, pyproject.toml, dependency groups, and lockfiles.
 
 | Rule | Description |
 |------|-------------|
-| [pkg-uv](rules/pkg-uv.md) | Fast package management with uv |
-| [pkg-pyproject](rules/pkg-pyproject.md) | Project configuration with pyproject.toml |
+| [pkg-uv](rules/pkg-uv.md) | Project workflow with uv |
+| [pkg-pyproject](rules/pkg-pyproject.md) | Project configuration with pyproject.toml and dependency groups |
 
 ## Quick Reference
 
@@ -79,7 +79,7 @@ version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = []
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = ["ruff", "mypy", "pytest", "pytest-cov", "pyscn"]
 
 [tool.ruff]
@@ -113,6 +113,7 @@ ruff check . --fix              # Auto-fix issues
 
 # Formatting
 ruff format .                   # Format code
+ruff check . --select=I --fix   # Sort imports
 
 # Type checking
 mypy .                          # Type check
@@ -122,6 +123,8 @@ pytest                          # Run tests
 pytest --cov=src                # With coverage
 
 # Package management (uv)
-uv pip install -e ".[dev]"      # Install with dev deps
-uv pip compile pyproject.toml -o requirements.lock
+uv add fastapi                  # Add runtime dependency
+uv add --dev ruff mypy pytest   # Add dev dependency group
+uv sync                         # Sync .venv from uv.lock
+uv run pytest                   # Run inside the project environment
 ```

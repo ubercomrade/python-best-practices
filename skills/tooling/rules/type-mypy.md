@@ -10,7 +10,19 @@ tags: [mypy, type-checking, typing, pyproject.toml]
 ## Description
 Mypy is a static type checker for Python. It catches type errors at development time, improving code reliability and enabling better IDE support. Configure it in `pyproject.toml` for consistent type checking.
 
-## Basic Configuration
+## Bad Example
+```toml
+# Type checker is missing or too permissive.
+[tool.mypy]
+ignore_errors = true
+```
+
+```python
+def total(items):
+    return sum(item.price for item in items)
+```
+
+## Good Example
 
 ```toml
 # pyproject.toml
@@ -100,7 +112,7 @@ mypy --install-types      # Auto-install missing stubs
 ## Notes
 - New projects should start with `strict = true`
 - Use `mypy.overrides` for per-module settings
-- Install type stubs: `pip install types-requests types-redis`
+- Install type stubs through the project workflow, for example `uv add --dev types-requests types-redis`
 - Enable `warn_unused_ignores` to catch obsolete ignores
 - Use `reveal_type(expr)` for debugging type inference
 
